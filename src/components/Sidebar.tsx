@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart3, FileSearch, LayoutDashboard, Layers } from 'lucide-react'
+import { BarChart3, FileSearch, LayoutDashboard, Layers, Network } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/leaves', label: 'Leaves', icon: Layers },
+  { href: '/mercadological', label: 'Estrutura Mercadológica', icon: Network },
+  { href: '/leaves', label: 'Leaves Ativas', icon: Layers },
   { href: '/monitor', label: 'Monitor Legislativo', icon: FileSearch }
 ]
 
