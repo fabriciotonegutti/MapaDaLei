@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto'
 
 import { NextResponse } from 'next/server'
 
+import { generateLeafBacklog } from '@/lib/coverage/backlog-generator'
 import { mockLeaves } from '@/lib/mock-data'
 import { getSupabaseServerClient } from '@/lib/supabase'
 import { Leaf } from '@/types'
@@ -38,9 +39,38 @@ export async function POST(request: Request) {
   if (supabase) {
     const { data, error } = await supabase.from('leaves').insert(leaf).select().single()
     if (!error && data) {
-      return NextResponse.json(data, { status: 201 })
+      const createdLeaf = data as Leaf
+
+      // Auto-generate backlog for the new leaf
+      try {
+        const backlog = await generateLeafBacklog(createdLeaf.id, createdLeaf.name)
+        console.info(`[leaves/POST] Backlog gerado: ${backlog.tasks_created} tasks para leaf ${createdLeaf.id}`)
+
+        // Update tasks_total on the leaf
+        await supabase
+          .from('leaves')
+          .update({ tasks_total: backlog.tasks_created })
+          .eq('id', createdLeaf.id)
+
+        return NextResponse.json(
+          { ...createdLeaf, tasks_total: backlog.tasks_created, backlog },
+          { status: 201 }
+        )
+      } catch (backlogError) {
+        console.error('[leaves/POST] Falha ao gerar backlog:', backlogError)
+        return NextResponse.json(createdLeaf, { status: 201 })
+      }
     }
   }
 
-  return NextResponse.json(leaf, { status: 201 })
+  // Mock mode: generate backlog silently
+  try {
+    const backlog = await generateLeafBacklog(leaf.id, leaf.name)
+    return NextResponse.json(
+      { ...leaf, tasks_total: backlog.tasks_created, backlog },
+      { status: 201 }
+    )
+  } catch {
+    return NextResponse.json(leaf, { status: 201 })
+  }
 }
