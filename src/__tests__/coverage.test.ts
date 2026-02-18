@@ -139,10 +139,10 @@ describe('checkLeafCompleteness — verificação de cobertura', () => {
     expect(result.coverage_pct).toBe(0)
   })
 
-  it('deve retornar complete=false quando tasks estão pendentes (todo/in_progress)', async () => {
+  it('deve retornar complete=false quando tasks estão pendentes (todo/in_research)', async () => {
     const pendingTasks: Partial<Task>[] = [
       { tipo_regra: 'UF_INTRA', uf_origem: 'SP', status: 'todo' },
-      { tipo_regra: 'PISCOFINS', status: 'in_progress' },
+      { tipo_regra: 'PISCOFINS', status: 'in_research' as const },
     ]
 
     const mockSupabase = {
